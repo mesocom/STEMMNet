@@ -2,7 +2,9 @@
  * 
  *     UAH STEMMNet — Arduino
  *     
- *   Written by Nick Perlaky 2023
+ *   Written by Nick Perlaky 2024
+ *   
+ *   Revision 02/19/2024
  * 
  */
 
@@ -21,16 +23,17 @@
 
 /****************************/
 
-#define SN_ID ""
+#define SN_ID "SN######"
 #define API_KEY ""
-#define LOG_TIME 300
-#define UPLOAD_TIME 10800
+RTC_DATA_ATTR int LOG_INTERVAL_SECONDS = 300;
+RTC_DATA_ATTR int UPLOAD_INTERVAL_SECONDS = 10800;
+#define CONFIG_INTERVAL_SECONDS 86400
 
 // Temperature sensor addresses - in order of 0->4
 DeviceAddress dsAddresses[5] = {
-{0x28, 0x9B, 0xF6, 0xFF, 0x9, 0x0, 0x0, 0x8},
-{0x28, 0x85, 0x4, 0x0, 0xA, 0x0, 0x0, 0x6A},
-{0x28, 0xC9, 0xB6, 0x0, 0xA, 0x0, 0x0, 0xAE},
+{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
+{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
+{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
 {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
 {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
 };
@@ -45,16 +48,14 @@ DeviceAddress dsAddresses[5] = {
 
 // Data logging constants
 #define SLEEP_INTERVAL_SECONDS 5
-#define LOG_INTERVAL_SECONDS LOG_TIME
 #define LOG_BUFFER_SECONDS 15
-#define UPLOAD_INTERVAL_SECONDS UPLOAD_TIME
 #define CELL_CONNECT_TIMEOUT_MS 120000
 #define POINT_LENGTH_BYTES 111 // 110 bytes + ; + \0
 
 // Network constants
+String STATION_ID = SN_ID;
 String SERVER_API_KEY = API_KEY;
 String SERVER_URL = "data.alclimate.com";
-String STATION_ID = SN_ID;
 #define SERVER_PORT 1000
 
 // Status constants
@@ -65,7 +66,7 @@ String STATION_ID = SN_ID;
 // Clock
 RTC_DS3231 rtc;
 DateTime currentTime;
-
+uint32_t tempTime;
 
 // SARA R5
 #define saraSerial Serial1
@@ -117,15 +118,28 @@ void setup() {
     systemStatus(STATUS_ERROR);
   }
 
+  // Check if time is below 1 December 2023 (arbitrarily selected) ... if so need to run config
+  currentTime = rtc.now();
+  if (SERIAL_DEBUG) {Serial.print("Current time: ");Serial.println(currentTime.unixtime());}
+  if (!radioWasInitiallyTurnedOff) {
+    if (SERIAL_DEBUG) Serial.println(F("Pulling config data..."));
+    cellRadioSetup();
+    timeConfig();
+    systemSleep(SLEEP_INTERVAL_SECONDS);
+  }
 
   /* Log time check */
-  currentTime = rtc.now();
   if (SERIAL_DEBUG) {Serial.print("Current time: ");Serial.println(currentTime.unixtime());}
   if ( (currentTime.unixtime() % LOG_INTERVAL_SECONDS) - LOG_INTERVAL_SECONDS < -LOG_BUFFER_SECONDS ) {
     systemStatus(STATUS_BLINK);
     systemSleep(SLEEP_INTERVAL_SECONDS);
-  }
-  
+  } // Exits to sleep if not on an interval
+
+
+  /*******************************************/
+  /* BELOW runs if interval has been reached */
+  /*******************************************/
+
 
   /* SD Card Check */
   enableMicroSDPower();
@@ -184,7 +198,7 @@ void loop() {
   if (SERIAL_DEBUG) Serial.println(F("Logging complete"));
 
   // Upload data if time or SD card has failed and log interval is > 2min - need to fix for stations to upload and collect at same time
-  if ((currentTime.unixtime() % UPLOAD_INTERVAL_SECONDS == 0 || !sdCardFunctioning) ){// && LOG_INTERVAL_SECONDS > 120) {
+  if ((currentTime.unixtime() % UPLOAD_INTERVAL_SECONDS == 0 || !sdCardFunctioning) ){
 
     if (SERIAL_DEBUG) Serial.println(F("Beginning Upload Process..."));
     
@@ -216,6 +230,11 @@ void loop() {
     }
     
     else uploadData(d); // Single point if SD failed
+
+    if (currentTime.unixtime() % CONFIG_INTERVAL_SECONDS == 0) {
+      bool configResult = timeConfig();
+      // config error checking
+    }
     
   }
 
@@ -302,7 +321,7 @@ bool uploadData(char *d) {
   if (SERIAL_DEBUG) Serial.println(F("Uploading data..."));
 
   String dataString = "token=" + SERVER_API_KEY + "&id=" + STATION_ID + "&data=" + String(d);
-  Serial.println(dataString);
+  if (SERIAL_DEBUG) Serial.println(dataString);
 
   // Send data
   uploadComplete = false;
@@ -379,6 +398,78 @@ void systemSleep(int sleepSeconds) {
   
 }
 
+
+/* Retrieve system configuration and current time */
+bool timeConfig() {
+
+  // Download config data * need to add station ID
+  assetTracker.sendHTTPGET(0, "/config.php?id=" + STATION_ID, "config_response.txt");
+
+  // Wait for download to complete with 10 second timeout
+  uploadComplete = false;
+  unsigned long start = millis();
+  while (!uploadComplete) {
+    assetTracker.poll();
+    delay(10);
+    if (millis() - start > 10000) {
+      if (SERIAL_DEBUG) Serial.println(F("Failed to download!"));
+      systemStatus(STATUS_ERROR);
+      return false;
+    }
+  }
+
+  // Retrieve data from SARA filesystem
+  String configResponse;
+  assetTracker.getFileContents("config_response.txt", &configResponse);
+  if (SERIAL_DEBUG) Serial.println(F("Config Response: "));
+  if (SERIAL_DEBUG) Serial.println(configResponse);
+
+  // * add error check for bad response
+
+  // Process response by filtering out HTTP header and splitting on commas
+  int maxParts = 8;
+  String parts[maxParts];
+  int partCount = 0;
+  int strIndex = 0;
+  int minIndex = 0;
+  String delimiter = ",";
+  
+  String filteredResponse = configResponse.substring(configResponse.lastIndexOf('\n')+1);
+
+  while (strIndex < filteredResponse.length() && partCount < maxParts) {
+    strIndex = filteredResponse.indexOf(delimiter, minIndex);
+    if (strIndex == -1) {
+      strIndex = filteredResponse.length();
+    }
+    parts[partCount] = filteredResponse.substring(minIndex, strIndex);
+    partCount++;
+    minIndex = strIndex + 1;
+  }
+
+  // Set log interval ... 300 if error
+  if (parts[0].toInt() == 0) LOG_INTERVAL_SECONDS = 300;
+  else LOG_INTERVAL_SECONDS = parts[0].toInt();
+
+  // Set upload interval ... 10800 if error
+  if (parts[1].toInt() == 0) UPLOAD_INTERVAL_SECONDS = 10800;
+  else UPLOAD_INTERVAL_SECONDS = parts[1].toInt();
+
+  // Set new time
+  rtc.adjust(DateTime(
+    parts[2].toInt(), parts[3].toInt(), parts[4].toInt(),
+    parts[5].toInt(), parts[6].toInt(), parts[7].toInt())
+    );
+
+  DateTime checkTime = rtc.now();
+  if (SERIAL_DEBUG) {Serial.print("Configured time: ");Serial.println(checkTime.unixtime());}
+  if (SERIAL_DEBUG) {Serial.print("Configured log interval: ");Serial.println(LOG_INTERVAL_SECONDS);}
+  if (SERIAL_DEBUG) {Serial.print("Configured upload interval: ");Serial.println(UPLOAD_INTERVAL_SECONDS);}
+
+  assetTracker.deleteFile("config_response.txt");
+
+  return true;
+  
+}
 
 
 
