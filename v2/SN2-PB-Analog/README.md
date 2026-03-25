@@ -61,7 +61,7 @@ particle webhook list
 **Telemetry Webhook:**
 1. Go to Particle Console → Integrations → New Integration → Webhook
 2. Settings:
-   - Event Name: `tb-telemetry`
+   - Event Name: `auth_token`
    - URL: `http://data.alclimate.com:1000/`
    - Request Type: `POST`
    - Request Format: `Form`
@@ -71,7 +71,7 @@ particle webhook list
      - `data`: `{{data}}`
    - Advanced Settings:
      - Enforce SSL: `OFF`
-     - Response Topic: `{{PARTICLE_DEVICE_ID}}/hook-response/tb-telemetry`
+     - Response Topic: `{{PARTICLE_DEVICE_ID}}/hook-response/auth_token`
 
 **Config Webhook:**
 1. Go to Particle Console → Integrations → New Integration → Webhook
@@ -109,7 +109,7 @@ For each station, update the code constants:
 
 ```cpp
 const char STATION_ID[] = "SN000000";  // Change to your station ID
-const char THINGSBOARD_TOKEN[] = "rdbp1d9j7d6ou7bq11t6";  // Your ThingsBoard device token
+const char AUTH_TOKEN[] = "";  // Your authentication token
 ```
 
 Also update the Dallas sensor addresses in the `dsAddresses[]` array for each physical sensor.
@@ -121,7 +121,7 @@ Also update the Dallas sensor addresses in the `dsAddresses[]` array for each ph
 2. Reads all sensors
 3. Formats data as semicolon-delimited string
 4. Saves to SD card (daily file + upload buffer)
-5. Publishes "tb-telemetry" event with data
+5. Publishes "auth_token" event with data
 6. Webhook forwards to data.alclimate.com:1000
 7. Webhook response confirms success
 8. If successful, clears upload buffer
@@ -144,7 +144,7 @@ Valid range: 60 seconds (1 min) to 86400 seconds (24 hours)
 ```bash
 # Check webhook logs in Particle Console
 # Verify device is publishing events
-particle subscribe tb-telemetry mine
+particle subscribe auth_token mine
 
 # Check device logs
 particle serial monitor
@@ -202,7 +202,7 @@ Expected battery life with 10,000mAh:
 ## Migration Checklist
 
 - [ ] Update STATION_ID in code
-- [ ] Update THINGSBOARD_TOKEN in code
+- [ ] Update AUTH_TOKEN in code
 - [ ] Update dsAddresses[] with actual sensor addresses
 - [ ] Flash firmware to Boron
 - [ ] Create webhooks in Particle Console

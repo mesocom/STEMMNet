@@ -30,7 +30,7 @@ constexpr pin_t SD_CARD_POWER_PIN = PIN_INVALID; // update if carrier exposes de
 constexpr bool SERIAL_DEBUG = true;
 
 // Station identification
-const char THINGSBOARD_TOKEN[] = "rdbp1d9j7d6ou7bq11t6"; // from original analog code
+const char AUTH_TOKEN[] = ""; // Update with your station token
 
 constexpr size_t POINT_LENGTH_BYTES = 1024;
 constexpr size_t MAX_QUEUE_LINE_BYTES = 4096;
@@ -240,7 +240,7 @@ bool requestThingsBoardConfig() {
 
   char respBody[16];
   bool ok = httpPost(INGEST_HOST, INGEST_PORT, CONFIG_PATH,
-                     "text/plain", THINGSBOARD_TOKEN, strlen(THINGSBOARD_TOKEN),
+                     "text/plain", AUTH_TOKEN, strlen(AUTH_TOKEN),
                      respBody, sizeof(respBody));
   if (!ok) {
     if (SERIAL_DEBUG) Serial.println("Config HTTP request failed");
@@ -288,7 +288,7 @@ bool buildTelemetryPayload(const String &dataPoint, char *payloadBuffer, size_t 
   }
 
   ArduinoJson::DynamicJsonDocument payloadDoc(3072);
-  payloadDoc["token"] = THINGSBOARD_TOKEN;
+  payloadDoc["token"] = AUTH_TOKEN;
 
   if (!readingDoc["ts"].isNull()) {
     payloadDoc["ts"] = readingDoc["ts"];

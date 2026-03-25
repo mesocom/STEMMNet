@@ -41,7 +41,7 @@ constexpr pin_t SD_CARD_POWER_PIN = PIN_INVALID; // Update if carrier exposes de
 constexpr bool SERIAL_DEBUG = true;
 
 // Station identification — update token for each deployed station
-const char THINGSBOARD_TOKEN[]  = "a53aavt8hb8dkodwa2i2";
+const char AUTH_TOKEN[] = "";
 const char CONFIG_SHARED_KEYS[] = "LOG_INTERVAL_SECONDS";
 
 constexpr size_t POINT_LENGTH_BYTES        = 1024;  // Increased vs original to fit SDI-12 data
@@ -276,7 +276,7 @@ bool requestThingsBoardConfig() {
 
   char respBody[16];
   bool ok = httpPost(INGEST_HOST, INGEST_PORT, CONFIG_PATH,
-                     "text/plain", THINGSBOARD_TOKEN, strlen(THINGSBOARD_TOKEN),
+                     "text/plain", AUTH_TOKEN, strlen(AUTH_TOKEN),
                      respBody, sizeof(respBody));
   if (!ok) {
     if (SERIAL_DEBUG) Serial.println("Config HTTP request failed");
@@ -324,7 +324,7 @@ bool buildTelemetryPayload(const String &dataPoint, char *payloadBuffer, size_t 
   }
 
   ArduinoJson::DynamicJsonDocument payloadDoc(4096);
-  payloadDoc["token"] = THINGSBOARD_TOKEN;
+  payloadDoc["token"] = AUTH_TOKEN;
 
   if (!readingDoc["ts"].isNull()) {
     payloadDoc["ts"] = readingDoc["ts"];
