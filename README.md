@@ -15,8 +15,15 @@ The project is organized into versions, with the current focus on **v2** (Stable
     * Analog/Temperature focused firmware.
     * Support for dual ADS1115 (8 total analog channels) and DS18B20 temperature sensor arrays (OneWire).
     * Utilizes identical direct-upload architecture to the SDI-12 version for unified backend processing.
-* **[v2/SN2-PB-SDI12-Terminal](v2/SN2-PB-SDI12-Terminal)**:
+* **[v2/SN2-PB-SDI12-Terminal](v2/SN2-PB-SDI12-Terminal)**: 
     * Utility firmware for onsite SDI-12 sensor testing and manual address configuration.
+
+## Archive (v1)
+
+These folders contain legacy versions of the STEMMNet project for archival purposes:
+
+* **[v1/SN-V1-AssetTracker](v1/SN-V1-AssetTracker)**: Original STEMMNet prototype based on the SparkFun Asset Tracker (legacy STM32).
+* **[v1/SN-V1-FiPy](v1/SN-V1-FiPy)**: Experimental version utilizing the Pycom FiPy (ESP32) platform.
 
 ## Key Features
 

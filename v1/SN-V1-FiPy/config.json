@@ -1,0 +1,12 @@
+{
+  "device_id" : "SN001007",
+  "log_url" : "https://us-east-1-1.aws.cloud2.influxdata.com/api/v2/write?org=uah-atmos&bucket=EMESH&precision=s",
+  "api_token" : "68smTuEDFeV90anGYdgWKFiLDafFdsoiD1PzAj6vT9XHOuxYyIMqc1dC7J-CFodFMmzjkbnY0XD9t1jnRHcgMA==",
+  "log_interval" : 300,
+  "upload_interval" : 10800,
+  "rtc_sync_interval" : 86400,
+  "temp_sensors" : ["280c952b0d0000f2", "2892472b0d00008d", "28e3452b0d0000a1"],
+  "onewire_pin" : "P8",
+  "mosfet_pin" : "P21",
+  "config_pin" : "P11"
+}
