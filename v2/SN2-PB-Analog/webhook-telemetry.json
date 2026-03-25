@@ -1,0 +1,16 @@
+{
+  "event": "tb-telemetry",
+  "url": "http://data.alclimate.com:1000/",
+  "requestType": "POST",
+  "noDefaults": true,
+  "form": {
+    "token": "{{token}}",
+    "id": "{{id}}",
+    "data": "{{data}}"
+  },
+  "headers": null,
+  "query": null,
+  "auth": null,
+  "responseTemplate": "{{PARTICLE_EVENT_VALUE}}",
+  "responseTopic": "{{PARTICLE_DEVICE_ID}}/hook-response/tb-telemetry"
+}

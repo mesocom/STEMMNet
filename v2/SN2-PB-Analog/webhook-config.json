@@ -1,0 +1,14 @@
+{
+  "event": "tb-get-config",
+  "url": "http://data.alclimate.com:1000/config.php",
+  "requestType": "GET",
+  "noDefaults": true,
+  "query": {
+    "id": "{{PARTICLE_EVENT_VALUE}}"
+  },
+  "headers": null,
+  "form": null,
+  "auth": null,
+  "responseTemplate": "{{PARTICLE_EVENT_VALUE}}",
+  "responseTopic": "{{PARTICLE_DEVICE_ID}}/hook-response/tb-get-config"
+}
