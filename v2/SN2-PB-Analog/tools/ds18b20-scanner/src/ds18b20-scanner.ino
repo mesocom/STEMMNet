@@ -17,7 +17,8 @@ constexpr unsigned long SCAN_INTERVAL_MS = 5000;
 
 DS18 ds18(ONEWIRE_PIN);
 
-const char *typeToString(DS18Type type) {
+const char *ds18TypeToString(int typeInt) {
+  DS18Type type = (DS18Type)typeInt;
   switch (type) {
     case WIRE_DS18B20:
       return "DS18B20";
@@ -74,7 +75,7 @@ void scanBus() {
     Serial.print(" | ROM=");
     printAddress(addr);
     Serial.print(" | Type=");
-    Serial.print(typeToString(ds18.type()));
+    Serial.print(ds18TypeToString(ds18.type()));
     Serial.print(" | TempC=");
     Serial.println(ds18.celsius(), 4);
 
