@@ -5,12 +5,14 @@
 
 #include "Particle.h"
 
-// AUTOMATIC mode will automatically attempt to connect to the cellular 
-// network and the Particle cloud on boot and maintain that connection.
-SYSTEM_MODE(AUTOMATIC);
+// SEMI_AUTOMATIC mode gives us control over when the modem powers up.
+SYSTEM_MODE(SEMI_AUTOMATIC);
 SYSTEM_THREAD(ENABLED);
 
 void setup() {
+    // Explicitly command the cellular modem and cloud connection
+    Particle.connect();
+
     // Use the onboard LED for status feedback
     pinMode(D7, OUTPUT);
 }

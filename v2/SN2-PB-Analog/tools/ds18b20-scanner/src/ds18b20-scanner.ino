@@ -100,6 +100,8 @@ void scanBus() {
 }
 
 void setup() {
+  Particle.connect();
+
   pinMode(SENSOR_POWER_PIN, OUTPUT);
   digitalWrite(SENSOR_POWER_PIN, HIGH);
 
