@@ -16,6 +16,7 @@ constexpr pin_t ONEWIRE_PIN = D4;
 constexpr unsigned long SCAN_INTERVAL_MS = 5000;
 
 DS18 ds18(ONEWIRE_PIN);
+String scannedAddys = ""; 
 
 const char *ds18TypeToString(int typeInt) {
   DS18Type type = (DS18Type)typeInt;
@@ -47,6 +48,7 @@ void printAddress(const uint8_t addr[8]) {
 
 void scanBus() {
   Serial.println("Scanning DS18 bus...");
+  scannedAddys = ""; // Clear previous results
 
   uint8_t addr[8];
   uint8_t scratch[9];
@@ -70,6 +72,14 @@ void scanBus() {
     ds18.addr(addr);
     ds18.data(scratch);
 
+    // Build the hex string for remote retrieval
+    char hexAddr[17];
+    snprintf(hexAddr, sizeof(hexAddr), "%02X%02X%02X%02X%02X%02X%02X%02X",
+             addr[0], addr[1], addr[2], addr[3], addr[4], addr[5], addr[6], addr[7]);
+    
+    if (scannedAddys.length() > 0) scannedAddys += ",";
+    scannedAddys += hexAddr;
+
     Serial.print("  Sensor ");
     Serial.print(found);
     Serial.print(" | ROM=");
@@ -84,6 +94,7 @@ void scanBus() {
 
   if (found == 0) {
     Serial.println("  No DS18 sensors found");
+    scannedAddys = "none";
   }
   Serial.println();
 }
@@ -98,6 +109,8 @@ void setup() {
   Serial.println("DS18B20 discovery (Boron)");
   Serial.println("Power pin: D2, Data pin: D4");
   Serial.println("===========================");
+
+  Particle.variable("scannedAddys", scannedAddys);
 }
 
 void loop() {
