@@ -17,6 +17,8 @@ The project is organized into versions, with the current focus on **v2** (Stable
     * Utilizes identical direct-upload architecture to the SDI-12 version for unified backend processing.
 * **[v2/SN2-PB-SDI12-Terminal](v2/SN2-PB-SDI12-Terminal)**: 
     * Utility firmware for onsite SDI-12 sensor testing and manual address configuration.
+* **[tools/particle-online](tools/particle-online)**:
+    * Simple "keep-alive" script to maintain a persistent cellular/cloud connection for testing.
 
 ## Archive (v1)
 

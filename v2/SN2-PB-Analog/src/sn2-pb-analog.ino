@@ -30,7 +30,7 @@ constexpr pin_t SD_CARD_POWER_PIN = PIN_INVALID; // update if carrier exposes de
 constexpr bool SERIAL_DEBUG = true;
 
 // Station identification
-const char AUTH_TOKEN[] = ""; // Update with your station token
+const char AUTH_TOKEN[] = "9v99y7756nq0xa8zohm9"; // Update with your station token
 
 constexpr size_t POINT_LENGTH_BYTES = 1024;
 constexpr size_t MAX_QUEUE_LINE_BYTES = 4096;
