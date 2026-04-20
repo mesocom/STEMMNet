@@ -30,7 +30,7 @@ constexpr pin_t SD_CARD_POWER_PIN = PIN_INVALID; // update if carrier exposes de
 constexpr bool SERIAL_DEBUG = true;
 
 // Station identification
-const char AUTH_TOKEN[] = "9v99y7756nq0xa8zohm9"; // Update with your station token
+const char AUTH_TOKEN[] = ""; // Update with your station token
 
 constexpr size_t POINT_LENGTH_BYTES = 1024;
 constexpr size_t MAX_QUEUE_LINE_BYTES = 4096;
@@ -40,7 +40,7 @@ constexpr unsigned long HTTP_RESPONSE_TIMEOUT_MS = 15000UL;
 
 const char INGEST_HOST[] = "api.alclimate.com";
 constexpr int INGEST_PORT = 80;
-const char INGEST_PATH[] = "/ingest/auburnh2onet.php";
+const char INGEST_PATH[] = "/ingest/stemmnet.php";
 const char CONFIG_PATH[] = "/ingest/config.php";
 constexpr int MIN_DATA_INTERVAL = 60;
 constexpr int MAX_DATA_INTERVAL = 86400;
